@@ -5,30 +5,34 @@
 using namespace std;
 class knapsack
 {
-   public:
-      knapsack(ifstream &fin);
-      knapsack(const knapsack &);
-      int getCost(int) const;
-      int getValue(int) const;
-      int getCost() const;
-      int getValue() const;
-      int getNumObjects() const;
-      int getCostLimit() const;
-      void printSolution();
-      void select(int);
-      void unSelect(int);
-      bool isSelected(int) const;
-      int totalValue;
-      int totalCost;
+public:
+    knapsack(ifstream &fin);
+    knapsack(const knapsack &);
+    int getCost(int) const;
+    int getValue(int) const;
+    int getCost() const;
+    int getValue() const;
+    int getNumObjects() const;
+    int getCostLimit() const;
+    void printSolution();
+    void select(int);
+    void unSelect(int);
+    bool isSelected(int) const;
+    void sortWeighted();
+    void sortOrder();
+    int totalValue;
+    int totalCost;
+
 
 
 private:
     int numObjects;
     int costLimit;
+    vector<int> index;
     vector<int> value;
     vector<int> cost;
     vector<bool> selected;
-    vector<int> costdensity;
+    vector<double> costdensity;
 };
 
 knapsack::knapsack(ifstream &fin)
@@ -46,13 +50,15 @@ knapsack::knapsack(ifstream &fin)
    cost.resize(n);
    selected.resize(n);
    costdensity.resize(n);
+   index.resize(n);
 
    for (int i = 0; i < n; i++)
    {
       fin >> j >> v >> c;
       value[j] = v;
       cost[j] = c;
-      costdensity[j] = v/c;
+      costdensity[j] = (double)v/c;
+      index[i] = j;
       unSelect(j);
    }
 
@@ -162,7 +168,7 @@ void knapsack::printSolution()
    // Print out objects in the solution
    for (int i = 0; i < getNumObjects(); i++)
       if (isSelected(i))
-	 cout << i << "  " << getValue(i) << " " << getCost(i) << endl;
+	 cout << index[i] << "  " << getValue(i) << " " << getCost(i) << endl;
 
    cout << endl;
 }
@@ -211,4 +217,36 @@ bool knapsack::isSelected(int i) const
       throw rangeError("Bad value in knapsack::getValue");
 
    return selected[i];
+}
+
+void knapsack::sortWeighted()
+//function to sort the knapsack contents by their weighted value
+{
+   for (int i = (numObjects - 1); i >= 0; i--) {
+      for (int j = (numObjects - 1); j >= 0; j--) {
+         if (costdensity[i] > costdensity[j]) {
+            swap(costdensity[i], costdensity[j]);
+            swap(cost[i], cost[j]);
+            swap(value[i], value[j]);
+            swap(index[i], index[j]);
+            swap(selected[i], selected[j]);
+         }
+      }
+   }
+}
+
+void knapsack::sortOrder()
+//sorts knapsack objecs back to originally passed order
+{
+   for (int i = (numObjects - 1); i >= 0; i--) {
+      for (int j = (numObjects - 1); j >= 0; j--) {
+         if (index[i] > index[j]) {
+            swap(costdensity[i], costdensity[j]);
+            swap(cost[i], cost[j]);
+            swap(value[i], value[j]);
+            swap(index[i], index[j]);
+            swap(selected[i],selected[j]);
+         }
+      }
+   }
 }

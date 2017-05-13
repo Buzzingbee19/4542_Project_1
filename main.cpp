@@ -2,19 +2,15 @@
 //
 
 #include <iostream>
-#include <limits.h>
-#include <list>
 #include <fstream>
 #include <queue>
-#include <vector>
-#include <time.h>
 
 using namespace std;
 
 #include "d_except.h"
 #include "d_random.h"
 #include "knapsack.h"
-#include <ctime>
+#include <cmath>
 #include <stack>
 
 void exhaustiveKnapsack(knapsack& k, int time);
@@ -29,10 +25,10 @@ int main()
     // Read the name of the graph from the keyboard or
     // hard code it here for testing.
 
-   fileName = "knapsack32.input";
+    //fileName = "knapsack8.input";
 
-    //cout << "Enter filename" << endl;
-    //cin >> fileName;
+    cout << "Enter filename" << endl;
+    cin >> fileName;
 
     fin.open(fileName.c_str());
     if (!fin)
@@ -46,9 +42,9 @@ int main()
         cout << "Reading knapsack instance" << endl;
         knapsack k(fin);
 
-        exhaustiveKnapsack(k, 1);
+        exhaustiveKnapsack(k, 600);
 
-        cout << endl << "Best solution" << endl;
+        cout << endl << "Best solution found" << endl;
         k.printSolution();
 
     }
@@ -65,52 +61,79 @@ int main()
 
 void exhaustiveKnapsack(knapsack& k, int time)
 {
+
+   //initialize all variables
    clock_t timestart = clock();
-   clock_t timenow, timeelapsed = 0;
-   int object, value, cost, totalvalue = 0, totalcost = 0, bestcost, bestvalue = 0;
+   clock_t timenow;
+   int size, bestcost, bestvalue = 0, tempcost, tempvalue, x, z;
    randomNumber r;
-   vector<bool> bestobject;
-   bestobject.resize(k.getNumObjects());
+   size = k.getNumObjects();
+   vector<bool> tempstring, bestobject;
+   tempstring.resize(size);
+   bestobject.resize(size);
+   float timeelapsed;
+   int temp = size-1;
+ //  k.sortWeighted();
 
-   while(timeelapsed < time) {
-      do {
-         do {
-            object = (int) r.random() % k.getNumObjects();
-            while (object < 0)
-               object += k.getNumObjects();
-         } while (k.isSelected(object));
+   //loops through each possible combination of objects, checking their legality
+   for (int i = 0; i < pow(2,size); i++) {
 
-         value = k.getValue(object);
-         cost = k.getCost(object);
-         k.select(object);
+      //re-initializes variables for each attempted combo of objects
+      tempcost = 0;
+      tempvalue = 0;
+      z = temp;
+      x = i;
 
-         if (totalcost + cost > k.getCostLimit())
-            break;
-
-         totalcost += cost;
-         totalvalue += value;
-      } while (totalcost <= k.getCostLimit());
-
-      if (bestvalue < value) {
-         bestvalue = value;
-         bestcost = cost;
-
-         for (int i = 0; i < k.getNumObjects(); i++) {
-            bestobject[i] = k.isSelected(i);
-            k.unSelect(i);
-         }
+      //converts the loop iteration ino a unique binary string, and selects
+      // those items.
+      while (x > 0)
+      {
+         if (x % 2)
+            k.select(z);
+         else
+            k.unSelect(z);
+         z--;
+         x=x/2;
       }
 
-      //add printing function, and be able to compare to prior sacks
-      timenow = clock();
-      int x = CLOCKS_PER_SEC;
-      timeelapsed = ((timenow - timestart) / CLOCKS_PER_SEC)*1000000;
+      //chooses the objects to be placed in the bag
+      for (int j = 0; j < size; j++) {
+         if (k.isSelected(j)) {
+            tempcost += k.getCost(j);
+            tempvalue += k.getValue(j);
+            tempstring[j] = true;
+         }
+         else
+            tempstring[j] = false;
+      }
 
+      // checks to determine if the set of objects is a legal set, and if it
+      // is the most valuable set to this point
+      if (tempcost <= k.getCostLimit() & tempvalue > bestvalue) {
+         bestvalue = tempvalue;
+         bestobject = tempstring;
+         bestcost = tempcost;
+      }
+
+      //updates the amount of time the function has taken
+      timenow = clock();
+      timeelapsed = (float)(timenow - timestart) / CLOCKS_PER_SEC;
+
+      //checks to see if the function has exceeded it's time limit or has
+      // checked every object pairing
+      if (timeelapsed >= time || i == pow(2,size)-1)
+      {
+         for (int l = 0; l < size; l++)
+         {
+            k.unSelect(l);
+            if (bestobject[l])
+               k.select(l);
+         }
+         //updates the knapsack's cost and value for the best case
+         k.totalValue = bestvalue;
+         k.totalCost = bestcost;
+  //       k.sortOrder();
+         return;
+      }
    }
-   for (int j = 0; j < k.getNumObjects(); j++) {
-      if (bestobject[j])
-         k.select(j);
-   }
-   k.totalValue = bestvalue;
-   k.totalCost = bestcost;
 }
