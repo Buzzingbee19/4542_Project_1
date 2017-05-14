@@ -160,15 +160,29 @@ ostream &operator<<(ostream &ostr, const knapsack &k)
 void knapsack::printSolution()
 // Prints out the solution.
 {
+   ofstream myfile;
+   myfile.open("output1024.txt");
    cout << "------------------------------------------------" << endl;
 
    cout << "Total value: " << getValue() << endl;
    cout << "Total cost: " << getCost() << endl << endl;
 
+   myfile << "------------------------------------------------" << endl;
+
+   myfile << "Total value: " << getValue() << endl;
+   myfile << "Total cost: " << getCost() << endl << endl;
+
    // Print out objects in the solution
-   for (int i = 0; i < getNumObjects(); i++)
-      if (isSelected(i))
-	 cout << index[i] << "  " << getValue(i) << " " << getCost(i) << endl;
+   for (int i = 0; i < getNumObjects(); i++){
+
+      if (isSelected(i)){
+
+         cout << index[i] << "  " << getValue(i) << " " << getCost(i) << endl;
+         myfile << index[i] << "  " << getValue(i) << " " << getCost(i) << endl;
+
+      }
+
+   }
 
    cout << endl;
 }
