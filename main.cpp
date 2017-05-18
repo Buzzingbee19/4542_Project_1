@@ -65,12 +65,12 @@ void exhaustiveKnapsack(knapsack& k, int time)
 {
 
    //initialize all variables
-   clock_t timestart = clock();
+   clock_t timestart = clock(); //Set the start of the clock for timeout
    clock_t timenow;
    int size, bestcost, bestvalue = 0, tempcost, tempvalue, x, z;
    randomNumber r;
    size = k.getNumObjects();
-   vector<bool> tempstring, bestobject;
+   vector<bool> tempstring, bestobject; //Strings to hold the current and best forms of packing the stack
    tempstring.resize(size);
    bestobject.resize(size);
    float timeelapsed;
